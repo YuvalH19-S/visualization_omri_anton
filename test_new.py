@@ -775,21 +775,23 @@ lock_dates = pd.read_csv('data/US_Lockdown_Dates.csv')
 st.sidebar.header("Settings")
 
 # Date Ranges
-start_date = st.sidebar.date_input("Start date", pd.to_datetime("01/01/2017", format='%d/%m/%Y'))
-end_date = st.sidebar.date_input("End date", pd.to_datetime("31/12/2022", format='%d/%m/%Y'))
+# Date Ranges
+start_date = st.sidebar.date_input("Start date", pd.to_datetime("01-01-2017", format='%d-%m-%Y'))
+end_date = st.sidebar.date_input("End date", pd.to_datetime("31-12-2022", format='%d-%m-%Y'))
 
 # Visualization Selector
 visualizations = st.sidebar.multiselect(
     "Select visualizations to display",
     ["US Map & Accident Scatter", "Signs & Accidents", "Weather & Traffic Accidents", "Holidays & Traffic Accidents","Over Time Trends Including Coronavirus Lockdowns"],
-    ["US Map & Accident Scatter", "Signs & Accidents", "Weather & Traffic Accidents", "Holidays & Traffic Accidents","Over Time Trends Including Coronavirus Lockdowns"] # defualt
+    ["US Map & Accident Scatter", "Signs & Accidents", "Weather & Traffic Accidents", "Holidays & Traffic Accidents","Over Time Trends Including Coronavirus Lockdowns"] # default
 )
 
+# Ensure 'Start_Time' is datetime in the data
+data['Start_Time'] = pd.to_datetime(data['Start_Time'])
 
 # Filtered data based on selected date range
-filtered_data = data[(data['Start_Time'] >= pd.to_datetime(start_date, format='%d/%m/%Y')) &
-                     (data['Start_Time'] <= pd.to_datetime(end_date, format='%d/%m/%Y'))]
-
+filtered_data = data[(data['Start_Time'] >= pd.to_datetime(start_date)) &
+                     (data['Start_Time'] <= pd.to_datetime(end_date))]
 
 ############## Dashboard ##############
 st.title('Visualization Project - US Traffic Accidents')
