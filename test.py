@@ -698,20 +698,29 @@ def time_and_corona_trend_plot(df,states,lock_dates):
 ################################################################## Read Data ##################################################################
 
 ############## read data into dataframe ##############
-data = pd.read_csv("data/US_Accidents_March23_sampled_500k.csv",low_memory=False) # Use Sample Data
+# Load the dataset
+@st.cache_data
+def load_data():
+    df = pd.read_csv("data/US_Accidents_March23_sampled_500k_with_time.csv",low_memory=False)
+    df2 = pd.read_csv('data/holiday_average_daily_accident_count.csv')
+    return df, df2
+    
+data , holiday_average_daily_accident_count_df = load_data()
 
 ############## add data & time ##############
 # Remove milliseconds from datetime strings (if present)
-data['Start_Time'] = data['Start_Time'].apply(lambda x: x.split('.')[0] if '.' in x else x)
-data['End_Time'] = data['End_Time'].apply(lambda x: x.split('.')[0] if '.' in x else x)
-# Convert the datetime columns to datetime object
-data['Start_Time'] = pd.to_datetime(data['Start_Time'], format='%Y-%m-%d %H:%M:%S')
-data['End_Time'] = pd.to_datetime(data['End_Time'], format='%Y-%m-%d %H:%M:%S')
-# Create Date & Time Features
-data['Year'] = data['Start_Time'].dt.year
-data['Month'] = data['Start_Time'].dt.month
-data['Day'] = data['Start_Time'].dt.day
-data['Hour'] = data['Start_Time'].dt.hour
+# data['Start_Time'] = data['Start_Time'].apply(lambda x: x.split('.')[0] if '.' in x else x)
+# data['End_Time'] = data['End_Time'].apply(lambda x: x.split('.')[0] if '.' in x else x)
+# # Convert the datetime columns to datetime object
+# data['Start_Time'] = pd.to_datetime(data['Start_Time'], format='%Y-%m-%d %H:%M:%S')
+# data['End_Time'] = pd.to_datetime(data['End_Time'], format='%Y-%m-%d %H:%M:%S')
+# # Create Date & Time Features
+# data['Year'] = data['Start_Time'].dt.year
+# data['Month'] = data['Start_Time'].dt.month
+# data['Day'] = data['Start_Time'].dt.day
+# data['Hour'] = data['Start_Time'].dt.hour
+
+
 
 ############## Add Holiday Data ##############
 def defin_holidy(row):
@@ -737,28 +746,27 @@ def defin_holidy(row):
     else:
         return "Non Holiday"
 # Copy relevenet columns
-df = data[["Start_Time","Year","Day","Sunrise_Sunset"]].copy()
-# Extract the date part from 'Start_Time'
-df['Date'] = df['Start_Time'].dt.date
-# Create holidy column
-df['Holiday'] = df.apply(defin_holidy, axis=1)
-# Grouping by Year, Holiday, Sunrise_Sunset and calculating daily accident count and number of days
-df_grouped = df.groupby(['Year', 'Holiday', 'Sunrise_Sunset']).agg(
-    Daily_Accident_Count=('Date', 'size'),
-    Number_of_Days=('Date', 'nunique')
-).reset_index()
-# Calculating average daily accident count
-df_grouped['Average_Daily_Accident_Count'] = df_grouped['Daily_Accident_Count'] / df_grouped['Number_of_Days']
-# Remove partly recorder years
-df_grouped= df_grouped[(df_grouped['Year'] != 2023) & (df_grouped['Year'] != 2016)]
-# Rename
-holiday_average_daily_accident_count_df = df_grouped
+# df = data[["Start_Time","Year","Day","Sunrise_Sunset"]].copy()
+# # Extract the date part from 'Start_Time'
+# df['Date'] = df['Start_Time'].dt.date
+# # Create holidy column
+# df['Holiday'] = df.apply(defin_holidy, axis=1)
+# # Grouping by Year, Holiday, Sunrise_Sunset and calculating daily accident count and number of days
+# df_grouped = df.groupby(['Year', 'Holiday', 'Sunrise_Sunset']).agg(
+#     Daily_Accident_Count=('Date', 'size'),
+#     Number_of_Days=('Date', 'nunique')
+# ).reset_index()
+# # Calculating average daily accident count
+# df_grouped['Average_Daily_Accident_Count'] = df_grouped['Daily_Accident_Count'] / df_grouped['Number_of_Days']
+# # Remove partly recorder years
+# df_grouped= df_grouped[(df_grouped['Year'] != 2023) & (df_grouped['Year'] != 2016)]
+
+# save df_grouped to csv
+
 
 ############## Read Additional data ##############
 states = pd.read_csv('data/state_abbreviations.csv')
 lock_dates = pd.read_csv('data/US_Lockdown_Dates.csv')
-
-
 
 
 ################################################################## Dashboard Stucture ##################################################################
